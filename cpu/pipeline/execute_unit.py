@@ -53,7 +53,9 @@ class execute_unit(Component):
     def execute_instruction(self, cpu):
         if isinstance(self.pipeline_register, branch):
             self.pipeline_register.execute(cpu)
+            # add pc, operand values to branch_target_buffer
             cpu.flush_pipeline(self.pipeline_register)
+            cpu.flushed_count += 1
             return
 
         self.pipeline_register.execute(cpu)

@@ -2,7 +2,7 @@ from cpu.Memory import REGISTERS, MEMORY, SCOREBOARD
 
 # General Instruction class that all instructions are subclasses of
 class Instruction:
-    def __init__(self, cpu, instruction):
+    def __init__(self, cpu, instruction, pc):
         self.opcode = instruction[0]
         # self.dest
         # self.source
@@ -20,7 +20,8 @@ class Instruction:
         self.result = 0
         self.cycles = 1
         self.finished = False
-        self.pc = cpu.program_counter - ( (len(list(filter(None, cpu.decode_unit.pipeline_register)))) - cpu.decode_unit.pipeline_register.index(instruction))
+        self.pc = pc
+        #cpu.program_counter - ( (len(list(filter(None, cpu.decode_unit.pipeline_register)))) - cpu.decode_unit.pipeline_register.index(instruction))
         
     def __repr__(self):
         return self.opcode + " " + " ".join(self.operands)
@@ -129,8 +130,8 @@ class MEMORYInstruction(Instruction):
         REGISTERS[self.eo[0]] = self.result
 
 class CONTROLInstruction(Instruction):
-    def __init__(self, cpu, instruction):
-        super(CONTROLInstruction, self).__init__(cpu, instruction)
+    def __init__(self, cpu, instruction, pc):
+        super(CONTROLInstruction, self).__init__(cpu, instruction, pc)
         self.cycles = 2
 
     def decode(self, cpu):

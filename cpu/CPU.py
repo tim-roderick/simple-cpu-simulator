@@ -20,6 +20,7 @@ class CPU():
 
         self.cycle_count = 0
         self.instructions_executed = 0
+        self.flushed_count = 0
     
     def increment_pc(self, num=1):
         self.program_counter += num
@@ -156,6 +157,7 @@ class CPU():
     def print_state(self, final=False):
         if final:    
             stats = ("CYCLE COUNT: " + str(self.cycle_count) + "  |  "
+                    "FLUSHED COUNT: " + str(self.flushed_count) + "  |  "
                     "INSTRUCTIONS EXECUTED: " + str(self.instructions_executed) + "  |  "
                     "INSTRUCTIONS PER CYCLE: " + str(self.instructions_executed / self.cycle_count))
         else:

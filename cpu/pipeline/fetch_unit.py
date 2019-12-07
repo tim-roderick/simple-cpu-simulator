@@ -14,6 +14,7 @@ class fetch_unit(Component):
                 if cpu.program_counter < len(cpu.instruction_cache):
                     if not cpu.decode_unit.is_empty():
                         return
+                    
                     if self.add_to_instruction_buffer(cpu, cpu.instruction_cache[cpu.program_counter]):
                         cpu.increment_pc(1)
                 else:
@@ -37,7 +38,7 @@ class fetch_unit(Component):
     def add_to_instruction_buffer(self, cpu, instruction):
         for i in range(len(cpu.decode_unit.instruction_buffer)):
             if not cpu.decode_unit.instruction_buffer[i]:
-                cpu.decode_unit.instruction_buffer[i] = instruction
+                cpu.decode_unit.instruction_buffer[i] = [instruction, cpu.program_counter]
                 return True
         return False
     

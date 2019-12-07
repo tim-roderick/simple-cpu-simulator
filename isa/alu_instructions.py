@@ -20,16 +20,16 @@ class SUBI(ALUInstruction):
         self.result = self.eo[1] - self.eo[2]
 
 class MUL(ALUInstruction):
-    def __init__(self, cpu, instruction):
-        super(MUL, self).__init__(cpu, instruction)
+    def __init__(self, cpu, instruction, pc):
+        super(MUL, self).__init__(cpu, instruction, pc)
         self.cycles = 4
         
     def execute(self, cpu):
         self.result = self.eo[1] * self.eo[2]
 
 class DIV(ALUInstruction):
-    def __init__(self, cpu, instruction):
-        super(DIV, self).__init__(cpu, instruction)
+    def __init__(self, cpu, instruction, pc):
+        super(DIV, self).__init__(cpu, instruction, pc)
         self.cycles = 4
 
     def execute(self, cpu):

@@ -1,7 +1,9 @@
 from isa.opcodes import OPCODES
 from isa.Instructions import ALUInstruction, MEMORYInstruction, CONTROLInstruction
+from isa.control_instructions import *
 from .component import Component
-from cpu.Memory import SCOREBOARD
+from cpu.Memory import SCOREBOARD, REGISTERS
+import copy
 
 class decode_unit(Component): 
     def __init__(self):
@@ -9,6 +11,7 @@ class decode_unit(Component):
         #For now hardcode 0, 1 to be alu, 2 mem, 3 branch
         # self.pipeline_register = {"current": ["","","",""] , "next": ["","","",""]}
         self.instruction_buffer = [""] * 16
+        self.branch_target_buffer = {}
 
     def is_empty(self):
         return not any(self.pipeline_register)
@@ -38,9 +41,11 @@ class decode_unit(Component):
             # instructions = []
             for i in range(len(self.pipeline_register)):
                 if self.pipeline_register[i]:
-                    self.pipeline_register[i] = self.pipeline_register[i].split(' ')
-                    self.pipeline_register[i] = OPCODES[self.pipeline_register[i][0]](cpu, self.pipeline_register[i])
+                    self.pipeline_register[i][0] = self.pipeline_register[i][0].split(' ')
+                    self.pipeline_register[i] = OPCODES[self.pipeline_register[i][0][0]](cpu, self.pipeline_register[i][0], self.pipeline_register[i][1])
                     self.pipeline_register[i].decode(cpu)
+                    if self.check_branch(cpu, self.pipeline_register[i], i):
+                        return
                 #self.pipeline_register["next"]
                 # instructions = [instruction] + instructions
             self.issue(cpu)
@@ -87,6 +92,31 @@ class decode_unit(Component):
                     self.pipeline_register[i] = ""
                 else:
                     break
+    
+    def check_branch(self, cpu, original_instruction, index):
+        instruction = copy.deepcopy(original_instruction)
+
+        if isinstance(instruction, CONTROLInstruction):
+            if isinstance(instruction, J):
+                if any(op.startswith("r") for op in instruction.operands):
+                    if instruction.pc in self.branch_target_buffer:
+                        print("NOT YET")
+                        # self.branch_target_buffer[instruction.pc]
+                    else:
+                        return False
+                    # for op in instruction.to_evaluate:
+                    #     # if we don't already have a saved result for this branch in branch target buffer
+                    #     # take current value of register ? or maybe don't speculate
+                    #     # if we do have result in branch target buffer, use that
+                    #     instruction.eo[instruction.eo.index(op)] = REGISTER[op]
+                # if instruction.to_evaluate:
+                #     print("HM")
+                original_instruction.evaluate_params()
+                original_instruction.execute(cpu)
+                for i in range(index, len(self.pipeline_register)):
+                    self.pipeline_register[i] = ""
+                return True
+        return False
     
     def halt_unit(self):
         self.halt = True
