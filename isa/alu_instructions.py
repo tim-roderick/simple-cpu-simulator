@@ -7,9 +7,9 @@ class ADD(ALUInstruction):
     def execute(self, cpu):
         self.result = self.eo[1] + self.eo[2]
 
-class ADDI(ALUInstruction):
+class ADDI(ALUInstruction): #may be wrong
     def execute(self, cpu):
-        self.result = REGISTERS[self.eo[0]] + self.eo[1]
+        self.result = self.eo[1] + self.eo[2]
 
 class SUB(ALUInstruction):
     def execute(self, cpu):
@@ -17,13 +17,21 @@ class SUB(ALUInstruction):
 
 class SUBI(ALUInstruction):
     def execute(self, cpu):
-        self.result = REGISTERS[self.eo[0]] - self.eo[1]
+        self.result = self.eo[1] - self.eo[2]
 
 class MUL(ALUInstruction):
+    def __init__(self, cpu, instruction):
+        super(MUL, self).__init__(cpu, instruction)
+        self.cycles = 4
+        
     def execute(self, cpu):
         self.result = self.eo[1] * self.eo[2]
 
 class DIV(ALUInstruction):
+    def __init__(self, cpu, instruction):
+        super(DIV, self).__init__(cpu, instruction)
+        self.cycles = 4
+
     def execute(self, cpu):
         self.result = self.eo[1] / self.eo[2]
 

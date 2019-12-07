@@ -1,0 +1,7 @@
+LDC r2 2
+LDC r3 2
+LDC r4 3
+LDC r5 3
+
+MUL r1 r2 r3
+ADD r2 r4 r5

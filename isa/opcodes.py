@@ -14,9 +14,9 @@ OPCODES = {
     
     # Arithmetic, comparisons and logic
     "ADD" : ADD,  # | ADD  | @dest | *src1 | *src2 |  ->  @dest = *src1 + *src2   
-    "ADDI": ADDI, # | ADDI | @dest | $valu |          ->  @dest = *dest + $valu 
+    "ADDI": ADDI, # | ADDI | @dest | *src1 | $valu |  ->  @dest = *src1 + $valu 
     "SUB" : SUB,  # | SUB  | @dest | *src1 | *src2 |  ->  @dest = *src1 - *src2 
-    "SUBI": SUBI, # | SUBI | @dest | $valu |          ->  @dest = *dest - $valu
+    "SUBI": SUBI, # | SUBI | @dest | *src1 | $valu |  ->  @dest = *src1 - $valu
     "MUL" : MUL,  # | MUL  | @dest | *src1 | *src2 |  ->  @dest = *src1 * *src2   
     "DIV" : DIV,  # | DIV  | @dest | *src1 | *src2 |  ->  @dest = *src1 / *src2 
     "CMP" : CMP,  # | CMP  | @dest | *src1 | *src2 |  ->  @dest = 1, 0, -1 IF *src1 >/=/< *src2

@@ -6,5 +6,6 @@ LDC r4 8
 ADD r3 r1 r2
 MOV r1 r2
 MOV r2 r3
-SUBI r4 1
+MOV r5 r4
+SUBI r4 r5 1
 BNEZ 3 r4
