@@ -39,6 +39,14 @@ class reorder_buffer():
         self.tail = (self.tail + num) % len(self.buffer)
         # move head index by num
     
+    def distance_to_head(self, instruction):
+        distance = 0
+        if self.head < self.buffer.index(instruction):
+            distance = len(self.buffer) - self.buffer.index(instruction) + self.head
+        else:
+            distance = self.head - self.buffer.index(instruction)
+        return distance
+        
     def is_empty(self):
         return not any(self.buffer)
         # move head index by num

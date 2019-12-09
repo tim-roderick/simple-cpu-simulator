@@ -81,16 +81,25 @@ class reservation_station():
         return True           
 
     def dispatch(self):
-        if self.execute_unit.busy:
+        if self.execute_unit.busy or self.execute_unit.halt:
             return False
         
         #dispatch instr to execute unit
         for i in range(len(self.reservation)):
             if self.check_operand_availability(self.reservation[i]):
+                # print(self.reservation[i])
+                # print(self.execute_unit.pipeline_register)
+                # print("WHY GOD WHY")
                 # self.reservation[i].evaluate_params()
                 self.execute_unit.pipeline_register = self.reservation[i]
+                
                 # self.execute_unit.pipeline_register.reservation_issue()
                 self.reservation[i] = ""
+
+                # print("\n\n\n\n\n\n\n")
+                # print(self.reservation[i])
+                # print(self.execute_unit.pipeline_register)
+                # print("WHY GOD WHY")
                 self.clean_queue()
                 break
                 

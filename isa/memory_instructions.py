@@ -34,7 +34,11 @@ class ST(MEMORYInstruction):
         self.result = self.eo[1]
 
     def writeback(self, cpu):
-        MEMORY[self.eo[0] + self.eo[2]] = self.result
+        try:
+            MEMORY[self.eo[0] + self.eo[2]] = self.result
+        except:
+            cpu.print_state()
+            print(MEMORY)
 
 class STC(MEMORYInstruction):
     def __init__(self, cpu, instruction, pc):

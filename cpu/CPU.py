@@ -149,9 +149,9 @@ class CPU():
         for comp in self.all_components:
             comp.flush(self, instruction)
     
-    def update_reservation(self, instruction):
+    def update_reservation(self, cpu, instruction):
         for unit in self.execute_units:
-            unit.update_reservation(instruction)
+            unit.update_reservation(cpu, instruction)
         
     
     def print_state(self, final=False):
@@ -206,6 +206,7 @@ class CPU():
         # pprint.pprint(SCOREBOARD, compact=True)
 
         print("\nMEMORY:")
-        pprint.pprint(MEMORY, compact=True)
+        pprint.pprint(MEMORY[:128], compact=True)
+        print("...")
 
 

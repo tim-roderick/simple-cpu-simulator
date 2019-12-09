@@ -1,31 +1,7 @@
-;SETUP
-STC 0 8
-STC 1 7
-STC 2 6
-STC 3 2
-STC 4 2
-STC 5 3
-STC 6 3
-STC 7 5
-STC 8 1
-STC 9 2
-STC 10 1
-STC 11 12
-STC 12 6
-STC 13 4
-STC 14 7
-STC 15 200
-STC 16 8
-STC 17 16
-STC 18 1
-STC 19 7
-STC 20 91
-STC 21 20
-
 ;r1 is base of Array, r2 is lo, r3 is hi, r4 is SP, r16 is copy slave for r4
 LDC r1 0
 LDC r2 0
-LDC r3 21
+LDC r3 99
 MOV r16 r3
 ADDI r4 r16 1
 

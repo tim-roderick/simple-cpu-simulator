@@ -22,7 +22,7 @@ class execute_unit(Component):
                     if self.pipeline_register: 
                         self.execute_instruction(cpu)
             
-            if self.pipeline_register: 
+            if self.pipeline_register:
                 self.cycles_left = self.pipeline_register.cycles-1
 
                 if self.cycles_left == 0:
@@ -61,8 +61,9 @@ class execute_unit(Component):
         self.pipeline_register.execute(cpu)
         #
         if str(self.pipeline_register.eo[0]).startswith('r'):
-            cpu.update_reservation(self.pipeline_register)
+            cpu.update_reservation(cpu, self.pipeline_register)
         #
+        
         cpu.writeback_unit.add_result(self.pipeline_register)
         self.pipeline_register = []
         
@@ -88,10 +89,35 @@ class execute_unit(Component):
                 self.reservation_station.reservation[index] = ""
         self.reservation_station.clean_queue()
 
-    def update_reservation(self, instruction):
+    def update_reservation(self, cpu, instruction):
+        # print(instruction.eo[0], instruction.result, instruction.operands)
+        last_instr = None
+        for instr in cpu.reorder_buffer.buffer:
+            if not instr:
+                continue
+
+            if instruction in cpu.reorder_buffer.buffer:
+                if cpu.reorder_buffer.distance_to_head(instr) > cpu.reorder_buffer.distance_to_head(instruction):
+                    continue
+
+            if isinstance(instr, ALUInstruction) or instr.opcode in ["LD", "LDC", "MOV"]:
+                if instr.operands[0] == instruction.eo[0]:
+                    last_instr = instr
+                    break
+
         for elem in self.reservation_station.reservation:
             if not elem:
                 continue
+
+            # if not last_instr == None:
+            #     if not cpu.reorder_buffer.distance_to_head(elem) > cpu.reorder_buffer.distance_to_head(last_instr):
+            #         continue
+
+            # # if index of instruction is closer to head than elem return
+            # if instruction in cpu.reorder_buffer.buffer:
+            #     if cpu.reorder_buffer.distance_to_head(instruction) < cpu.reorder_buffer.distance_to_head(elem):
+            #         continue
+                
             if instruction.eo[0] in elem.to_evaluate:
                 i = elem.to_evaluate.index(instruction.eo[0])
                 j = elem.eo.index(instruction.eo[0])

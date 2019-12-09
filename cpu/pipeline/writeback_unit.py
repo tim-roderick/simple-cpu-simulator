@@ -18,7 +18,7 @@ class writeback_unit(Component):
                     instruction.reservation_update()
                     #
                     if str(instruction.eo[0]).startswith('r'):
-                        cpu.update_reservation(instruction)
+                        cpu.update_reservation(cpu, instruction)
                     #
                     cpu.increment_ie()
 

@@ -35,6 +35,14 @@ class DIV(ALUInstruction):
     def execute(self, cpu):
         self.result = self.eo[1] / self.eo[2]
 
+class IDIV(ALUInstruction):
+    def __init__(self, cpu, instruction, pc):
+        super(IDIV, self).__init__(cpu, instruction, pc)
+        self.cycles = 4
+
+    def execute(self, cpu):
+        self.result = self.eo[1] // self.eo[2]
+
 class CMP(ALUInstruction):
     def execute(self, cpu):
         x = self.eo[1] - self.eo[2]
