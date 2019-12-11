@@ -22,8 +22,12 @@ else:
     cpu = CPU.CPU(instructions, labels, fu, du, eus, wu)
     if sys.argv[1][11:] in INITIALISATION:
         MEMORY[:] = INITIALISATION[sys.argv[1][11:]]
-    
+    i = 0
     while not cpu.check_done():
         cpu.iterate(debug) 
+        # i += 1
+        # if i == 3000:
+        #     debug = True
+        
     cpu.print_state(True) 
 

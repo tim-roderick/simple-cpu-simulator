@@ -8,7 +8,17 @@ class LD(MEMORYInstruction):
         self.cycles = 5
 
     def execute(self, cpu):
-        self.result = MEMORY[self.eo[1] + self.eo[2]]        
+        self.result = MEMORY[self.eo[1] + self.eo[2]]
+
+    def writeback(self, cpu):
+        first_result = self.result    
+        self.execute(cpu)
+        if self.result == first_result:
+            super(LD, self).writeback(cpu)
+        else:
+            cpu.program_counter = self.pc+1
+            super(LD, self).writeback(cpu)
+            cpu.flush_pipeline(self)
 
 class LDC(MEMORYInstruction):
     def __init__(self, cpu, instruction, pc):
@@ -34,11 +44,7 @@ class ST(MEMORYInstruction):
         self.result = self.eo[1]
 
     def writeback(self, cpu):
-        try:
-            MEMORY[self.eo[0] + self.eo[2]] = self.result
-        except:
-            cpu.print_state()
-            print(MEMORY)
+        MEMORY[self.eo[0] + self.eo[2]] = self.result
 
 class STC(MEMORYInstruction):
     def __init__(self, cpu, instruction, pc):

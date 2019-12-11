@@ -1,6 +1,6 @@
 LDC r1 0
 LDC r2 1
-LDC r4 8
+LDC r4 1000
 
 ;Loop
 ADD r3 r1 r2

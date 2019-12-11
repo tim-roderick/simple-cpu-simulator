@@ -1,7 +1,8 @@
+
 ;r1 is base of Array, r2 is lo, r3 is hi, r4 is SP, r16 is copy slave for r4
 LDC r1 0
 LDC r2 0
-LDC r3 99
+LDC r3 100
 MOV r16 r3
 ADDI r4 r16 1
 

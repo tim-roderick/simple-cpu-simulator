@@ -1,7 +1,7 @@
 from .component import Component
 from .reservation_station import reservation_station
-from isa.Instructions import CONTROLInstruction as branch, ALUInstruction
-from cpu.Memory import SCOREBOARD
+from isa.Instructions import CONTROLInstruction as branch, ALUInstruction, MEMORYInstruction
+from cpu.Memory import SCOREBOARD, RAT
 
 class execute_unit(Component):
     def __init__(self):
@@ -35,12 +35,14 @@ class execute_unit(Component):
                     # self.pipeline_register.execute(cpu)
                     # #
                     # if str(self.pipeline_register.eo[0]).startswith('r'):
-                    #     cpu.update_reservation(self.pipeline_register)
                     # #
                     # cpu.writeback_unit.add_result(self.pipeline_register)
                     # self.pipeline_register = []
                 else: 
                     self.busy = True
+
+            cpu.update_reservation()
+            
                 
     #if self.eo[0] starts with r then its a dest one
     def cycle(self):
@@ -60,11 +62,18 @@ class execute_unit(Component):
 
         self.pipeline_register.execute(cpu)
         #
-        if str(self.pipeline_register.eo[0]).startswith('r'):
-            cpu.update_reservation(cpu, self.pipeline_register)
+        # if str(self.pipeline_register.eo[0]).startswith('r'):
+        #     cpu.update_reservation(cpu, self.pipeline_register)
         #
         
         cpu.writeback_unit.add_result(self.pipeline_register)
+
+        if isinstance(self.pipeline_register, MEMORYInstruction):
+            if self.pipeline_register.opcode in ["ST", "STC"]:
+                cpu.memory_order_buffer.add_to_store(cpu, self.pipeline_register)
+            elif self.pipeline_register.opcode == "LD":
+                cpu.memory_order_buffer.add_to_load(cpu, self.pipeline_register)
+
         self.pipeline_register = []
         
     def flush(self, cpu, instruction):
@@ -75,7 +84,8 @@ class execute_unit(Component):
             if self.pipeline_register not in cpu.reorder_buffer.buffer:    
                 #
                 if isinstance(self.pipeline_register, ALUInstruction) or self.pipeline_register.opcode in ["LD", "LDC", "MOV"]:
-                    SCOREBOARD[self.pipeline_register.operands[0]] = 1
+                    if RAT[self.pipeline_register.operands[0]] == self.pipeline_register.operands[0]:
+                        SCOREBOARD[self.pipeline_register.operands[0]] = 1
                 #
                 self.pipeline_register = []
     ##########################
@@ -83,48 +93,84 @@ class execute_unit(Component):
             if instruction not in cpu.reorder_buffer.buffer:
                 #
                 if isinstance(instruction, ALUInstruction) or instruction.opcode in ["LD", "LDC", "MOV"]:
-                    SCOREBOARD[instruction.operands[0]] = 1
+                    if RAT[instruction.operands[0]] == instruction.operands[0]:
+                        SCOREBOARD[instruction.operands[0]] = 1
                 #
                 index = self.reservation_station.reservation.index(instruction)
                 self.reservation_station.reservation[index] = ""
         self.reservation_station.clean_queue()
 
-    def update_reservation(self, cpu, instruction):
+    def update_reservation(self, cpu):
         # print(instruction.eo[0], instruction.result, instruction.operands)
-        last_instr = None
-        for instr in cpu.reorder_buffer.buffer:
-            if not instr:
+        # last_instr = None
+        # for instr in cpu.reorder_buffer.buffer:
+        #     if not instr:
+        #         continue
+
+        #     if instruction in cpu.reorder_buffer.buffer:
+        #         if cpu.reorder_buffer.distance_to_head(instr) > cpu.reorder_buffer.distance_to_head(instruction):
+        #             continue
+
+        #     if isinstance(instr, ALUInstruction) or instr.opcode in ["LD", "LDC", "MOV"]:
+        #         if instr.operands[0] == instruction.eo[0]:
+        #             last_instr = instr
+        #             break
+
+
+        #So general idea
+        #for reorder buffer
+            # if reorder buffer 
+                # if reorder buffer finished
+                    # for reservation
+                        # if to eval has rob + i
+                            # replace with val and remove from to eval
+
+        for instruction in cpu.reorder_buffer.buffer:
+            if not instruction:
                 continue
 
-            if instruction in cpu.reorder_buffer.buffer:
-                if cpu.reorder_buffer.distance_to_head(instr) > cpu.reorder_buffer.distance_to_head(instruction):
+            index = cpu.reorder_buffer.buffer.index(instruction)
+            # if not ("rob" + str(index)) in RAT.values():
+            #     continue
+            
+            if not instruction.finished:
+                continue
+
+            for elem in self.reservation_station.reservation:
+                if not elem:
                     continue
+                    
+                if "rob" + str(index) in elem.to_evaluate:
+                    i = elem.to_evaluate.index("rob" + str(index))
+                    j = elem.eo.index("rob" + str(index))
 
-            if isinstance(instr, ALUInstruction) or instr.opcode in ["LD", "LDC", "MOV"]:
-                if instr.operands[0] == instruction.eo[0]:
-                    last_instr = instr
-                    break
+                    elem.to_evaluate[i] = ""
+                    elem.eo[j] = instruction.result
+                elem.to_evaluate = list(filter(None, elem.to_evaluate))
+            
 
-        for elem in self.reservation_station.reservation:
-            if not elem:
-                continue
+                                
 
-            # if not last_instr == None:
-            #     if not cpu.reorder_buffer.distance_to_head(elem) > cpu.reorder_buffer.distance_to_head(last_instr):
-            #         continue
+        # for elem in self.reservation_station.reservation:
+        #     if not elem:
+        #         continue
 
-            # # if index of instruction is closer to head than elem return
-            # if instruction in cpu.reorder_buffer.buffer:
-            #     if cpu.reorder_buffer.distance_to_head(instruction) < cpu.reorder_buffer.distance_to_head(elem):
-            #         continue
+        #     # if not last_instr == None:
+        #     #     if not cpu.reorder_buffer.distance_to_head(elem) > cpu.reorder_buffer.distance_to_head(last_instr):
+        #     #         continue
+
+        #     # # if index of instruction is closer to head than elem return
+        #     # if instruction in cpu.reorder_buffer.buffer:
+        #     #     if cpu.reorder_buffer.distance_to_head(instruction) < cpu.reorder_buffer.distance_to_head(elem):
+        #     #         continue
                 
-            if instruction.eo[0] in elem.to_evaluate:
-                i = elem.to_evaluate.index(instruction.eo[0])
-                j = elem.eo.index(instruction.eo[0])
+        #     if instruction.eo[0] in elem.to_evaluate:
+        #         i = elem.to_evaluate.index(instruction.eo[0])
+        #         j = elem.eo.index(instruction.eo[0])
 
-                elem.to_evaluate[i] = ""
-                elem.eo[j] = instruction.result
-            elem.to_evaluate = list(filter(None, elem.to_evaluate))
+        #         elem.to_evaluate[i] = ""
+        #         elem.eo[j] = instruction.result
+        #     elem.to_evaluate = list(filter(None, elem.to_evaluate))
 
             
         # self.reservation_station.clean_queue()

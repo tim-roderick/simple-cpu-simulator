@@ -1,4 +1,4 @@
-from cpu.Memory import REGISTERS, MEMORY, SCOREBOARD
+from cpu.Memory import REGISTERS, MEMORY, SCOREBOARD, RAT
 
 # General Instruction class that all instructions are subclasses of
 class Instruction:
@@ -24,7 +24,14 @@ class Instruction:
         #cpu.program_counter - ( (len(list(filter(None, cpu.decode_unit.pipeline_register)))) - cpu.decode_unit.pipeline_register.index(instruction))
         
     def __repr__(self):
-        return self.opcode + " " + " ".join(self.operands)
+        string = ""
+        if self.eo:
+            for op in self.eo:
+                string += (" " + str(op))
+        else:
+            string = " " + " ".join(self.operands)
+
+        return self.opcode + string
     
     def decode(self, cpu):
         pass
@@ -78,7 +85,8 @@ class Instruction:
                     valu = REGISTERS[elem]
                     self.to_evaluate[index] = ""
                 else:
-                    valu = elem
+                    valu = RAT[elem]
+                    self.to_evaluate[index] = RAT[elem]
             else:
                 valu = int(elem)
                 self.to_evaluate[index] = ""
@@ -98,7 +106,9 @@ class ALUInstruction(Instruction):
         SCOREBOARD[self.operands[0]] = 0
 
     def reservation_update(self):
-        SCOREBOARD[self.operands[0]] = 1
+        #KEY
+        if RAT[self.operands[0]] == self.operands[0]:
+            SCOREBOARD[self.operands[0]] = 1
     
     def execute(self, cpu):
         pass
@@ -121,7 +131,8 @@ class MEMORYInstruction(Instruction):
 
     def reservation_update(self):
         if self.opcode in ["LD", "LDC", "MOV"]:
-            SCOREBOARD[self.operands[0]] = 1
+            if RAT[self.operands[0]] == self.operands[0]:
+                SCOREBOARD[self.operands[0]] = 1
 
     def execute(self, cpu):
         pass

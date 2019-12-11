@@ -1,5 +1,5 @@
 from cpu.Memory import REGISTERS, MEMORY, SCOREBOARD
-from isa.Instructions import ALUInstruction as aluclass
+from isa.Instructions import ALUInstruction, MEMORYInstruction
 
 class reservation_station():
     def __init__(self, execute_unit):
@@ -38,6 +38,18 @@ class reservation_station():
                 #
                 instruction.evaluate_params()
                 #
+                index = cpu.reorder_buffer.add_entry(instruction)
+                #
+                if isinstance(instruction, ALUInstruction) or instruction.opcode in ["LD", "LDC", "MOV"]:
+                    cpu.set_new_destination(instruction.eo[0], index)
+
+                # if isinstance(instruction, MEMORYInstruction):
+                #     if instruction.opcode in ["ST", "STC"]:
+                #         cpu.memory_order_buffer.add_to_store(instruction, index)
+                #     elif instruction.opcode == "LD":
+                #         cpu.memory_order_buffer.add_to_load(instruction, index)
+                        
+                #
                 self.reservation[i] = instruction
                 instruction.reservation_issue()
 
@@ -48,7 +60,8 @@ class reservation_station():
                 # if scoreboard bit isnt set, replace with eg "r1"
                 
                 # add instruction to reorder buffer
-                cpu.reorder_buffer.add_entry(instruction)
+                # index = cpu.reorder_buffer.add_entry(instruction)
+                
                 return True
         return False
               

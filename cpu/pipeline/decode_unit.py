@@ -61,15 +61,17 @@ class decode_unit(Component):
     def issue(self, cpu):
         #then issue rs 
         
-
+        if all(cpu.reorder_buffer.buffer):
+            return
+            
         for i in range(len(self.pipeline_register)):
             instruction = self.pipeline_register[i]
             if not instruction:
                 continue
 
-            if isinstance(instruction, ALUInstruction) or instruction.opcode in ["LD", "LDC", "MOV"]:
-                if not SCOREBOARD[instruction.operands[0]]:
-                    break
+            # if isinstance(instruction, ALUInstruction) or instruction.opcode in ["LD", "LDC", "MOV"]:
+            #     if not SCOREBOARD[instruction.operands[0]]:
+            #         break
 
             if isinstance(instruction, ALUInstruction):
                 if cpu.execute_units[0].reservation_station.issue(instruction, cpu):

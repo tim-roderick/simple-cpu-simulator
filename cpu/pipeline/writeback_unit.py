@@ -12,18 +12,19 @@ class writeback_unit(Component):
 
     def run(self, cpu):
         if not self.halt:
+            cpu.update_reservation()
             for instruction in self.pipeline_register:
-                if cpu.reorder_buffer.is_retirable(instruction):
+                if cpu.reorder_buffer.is_retirable(cpu, instruction):
                     instruction.writeback(cpu)
                     instruction.reservation_update()
                     #
-                    if str(instruction.eo[0]).startswith('r'):
-                        cpu.update_reservation(cpu, instruction)
+                    # if str(instruction.eo[0]).startswith('r'):
+                    # cpu.update_reservation()
                     #
                     cpu.increment_ie()
-
-                    index = self.pipeline_register.index(instruction)
-                    self.pipeline_register[index] = ""
+                    if instruction in self.pipeline_register:
+                        index = self.pipeline_register.index(instruction)
+                        self.pipeline_register[index] = ""
             self.clean()
 
     def flush(self, cpu, instruction):

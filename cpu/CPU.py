@@ -1,5 +1,6 @@
-from .Memory import REGISTERS, MEMORY, SCOREBOARD
+from .Memory import REGISTERS, MEMORY, SCOREBOARD, RAT
 from .reorder_buffer import reorder_buffer
+from .memory_order_buffer import memory_order_buffer
 import pprint
 
 class CPU():
@@ -15,6 +16,7 @@ class CPU():
         self.writeback_unit = writeback_unit
 
         self.reorder_buffer = reorder_buffer()
+        self.memory_order_buffer = memory_order_buffer()
 
         self.all_components = [self.fetch_unit, self.decode_unit] + self.execute_units + [self.writeback_unit]
 
@@ -145,13 +147,18 @@ class CPU():
 
     def flush_pipeline(self, instruction):
         self.reorder_buffer.flush(instruction)
+        self.memory_order_buffer.flush(self)
 
         for comp in self.all_components:
             comp.flush(self, instruction)
     
-    def update_reservation(self, cpu, instruction):
+    def update_reservation(self):
         for unit in self.execute_units:
-            unit.update_reservation(cpu, instruction)
+            unit.update_reservation(self)
+    
+    def set_new_destination(self, reg, index):
+        RAT[reg] = "rob" + str(index)
+        return "rob" + str(index)
         
     
     def print_state(self, final=False):
@@ -196,9 +203,9 @@ class CPU():
         print("\n|  REGISTER  |  VALUE  |  SCOREBOARD  |")
         for state in REGISTERS:
             if len(str(state)) > 2:
-                print(f"|     {state}    |    {REGISTERS[str(state)]}    |      {SCOREBOARD[str(state)]}       |")
+                print(f"|     {state}    |    {REGISTERS[str(state)]}    |      {SCOREBOARD[str(state)]}       |    {RAT[str(state)]}")
             else:
-                print(f"|     {state}     |    {REGISTERS[str(state)]}    |      {SCOREBOARD[str(state)]}       |")
+                print(f"|     {state}     |    {REGISTERS[str(state)]}    |      {SCOREBOARD[str(state)]}       |    {RAT[str(state)]}")
 
         # pprint.pprint(REGISTERS, compact=True)
 
@@ -206,7 +213,7 @@ class CPU():
         # pprint.pprint(SCOREBOARD, compact=True)
 
         print("\nMEMORY:")
-        pprint.pprint(MEMORY[:128], compact=True)
+        pprint.pprint(MEMORY[:256], compact=True)
         print("...")
 
 
